@@ -1,7 +1,9 @@
 package com.leigq.www.springsecuritystudy.config;
 
+import com.leigq.www.springsecuritystudy.security.CustomPermissionEvaluator;
 import com.leigq.www.springsecuritystudy.service.CustomUserDetailsService;
 import com.leigq.www.springsecuritystudy.security.CustomAuthenticationProvider;
+import com.leigq.www.springsecuritystudy.web.VerifyFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,8 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -48,6 +52,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
+
+    /**
+     * 注入自定义PermissionEvaluator
+     */
+    @Bean
+    public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler(){
+        DefaultWebSecurityExpressionHandler handler = new DefaultWebSecurityExpressionHandler();
+        handler.setPermissionEvaluator(new CustomPermissionEvaluator());
+        return handler;
+    }
 
     @Bean
     public PersistentTokenRepository persistentTokenRepository(){
@@ -103,10 +117,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 //添加一个 addFilterBefore() ，作用是在参数二(UsernamePasswordAuthenticationFilter)之前
                 // 执行参数一设置的过滤器
-//                .addFilterBefore(new VerifyFilter(),UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new VerifyFilter(),UsernamePasswordAuthenticationFilter.class)
                 .logout().permitAll()
                 .and()
-                .rememberMe()
+                .rememberMe()// 基于cookie自动登录
                 .tokenRepository(persistentTokenRepository())
                 // 有效时间：单位s
                 .tokenValiditySeconds(60)

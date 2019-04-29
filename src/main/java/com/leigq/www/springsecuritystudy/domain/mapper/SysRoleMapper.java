@@ -19,4 +19,7 @@ import org.apache.ibatis.annotations.Select;
 public interface SysRoleMapper {
     @Select("select * from sys_role where id = #{id}")
     SysRole selectById(Integer id);
+
+    @Select("select * from sys_role where name = #{roleName}")
+    SysRole selectByName(String roleName);
 }
